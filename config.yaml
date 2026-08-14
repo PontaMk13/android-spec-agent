@@ -1,0 +1,6 @@
+source:
+  name: android-security-bulletin
+  base_url: https://source.android.com/docs/security/bulletin
+
+loop:
+  max_retry: 2
