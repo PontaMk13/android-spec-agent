@@ -1,6 +1,10 @@
 source:
   name: android-security-bulletin
-  base_url: https://source.android.com/docs/security/bulletin
+  base_url: "https://source.android.com/docs/security/bulletin"
+  period: 2026-06
+
+llm:
+  model: gemini-flash-latest
 
 loop:
-  max_retry: 2
+  max_retry: 2”
