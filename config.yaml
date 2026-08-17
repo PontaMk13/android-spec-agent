@@ -1,10 +1,10 @@
 source:
   name: android-security-bulletin
   base_url: "https://source.android.com/docs/security/bulletin"
-  period: 2026-06
 
 llm:
   model: gemini-flash-latest
+  fallback_model: gemini-flash-lite-latest
 
 loop:
   max_retry: 2”

@@ -2,6 +2,8 @@ name: summarize
 
 on:
   workflow_dispatch:
+  schedule:
+  - cron: "0 15 1-7 * *"    # 毎月1〜7日、UTC 15:00 に実行
 
 jobs:
   run:
