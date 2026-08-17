@@ -60,12 +60,85 @@
 
 ---
 
+## ADR-005: 成果物と処理状態をディレクトリで分離
+
+**Status**: Accepted
+
+**Context**: 要約（人間が読む成果物）と、hash 等の処理制御用データは性質が異なる。混在させると成果物が汚れる。
+
+**Decision**: 成果物は `entries/`、処理状態は `state/` に分離する。要約は frontmatter 付き Markdown（`entries/<source>/<period>/asb-<period>-summary.md`）、処理状態は JSON（`state/<source>/asb-<period>-meta.json`）とする。
+
+**Consequences**:
+- `entries/` を成果物専用に保てる。
+- frontmatter には要約の属性（source_url, period, detected_at）のみを書き、hash は書かない。
+
+---
+
+## ADR-006: 処理状態を meta.json で管理
+
+**Status**: Accepted
+
+**Context**: hash 単体ではなく、リトライ回数・エラー・処理結果を含む「処理状態」を記録する必要がある（§5 の自律ループ制御に対応）。
+
+**Decision**: `state/<source>/asb-<period>-meta.json` に処理状態を持つ。項目は `content_hash` / `detected_at` / `retry_count` / `last_error` / `status`。period 単位でファイルを分割し、1ファイルへの集約はしない。
+
+**Consequences**:
+- 巡回対象が増えてもファイルが肥大化しない。
+- retry / error は自律ループ実装時に本格利用する（現状は枠のみ）。
+
+---
+
+## ADR-007: 変化検知は main タグの hash で行う
+
+**Status**: Accepted
+
+**Context**: URL Context では要約用にページ本文が手元に残らない。差分検知には別途取得が必要。CVE テーブルは main の外にあるが、更新印（Versions テーブル・Last updated）は main 内にある。
+
+**Decision**: `requests` で main タグを取得し、その sha256 を content_hash とする。前回 hash と比較し、変化があるときのみ要約（URL Context）を実行する。
+
+**Consequences**:
+- 変化検知（安価）と要約（変化時のみ）で処理が分離し、無駄な API 呼び出しを避ける。
+- main 外の CVE テーブルの変更は、更新印（main 内）経由で間接検知する。
+
+---
+
+## ADR-008: エラーは捕捉して meta に記録し、hash でリトライ制御
+
+**Status**: Accepted
+
+**Context**: 要約時に外部 API のエラー（例: 503 混雑）が発生しうる。クラッシュさせず、次回に再試行できる状態を残す必要がある。
+
+**Decision**: 要約呼び出しを try-except で捕捉する。成功時は `status: success` と content_hash を記録。失敗時は `status: error`・`last_error` を記録し、content_hash は空にする。
+
+**Consequences**:
+- エラーでクラッシュしない。
+- error 時は hash が空になるため、次回巡回で「変化あり」と判定され自動的に再試行される。
+
+---
+
+## ADR-009: 要約の出力形式を固定
+
+**Status**: Accepted
+
+**Context**: 同一プロンプトでも LLM の出力は揺らぎ、概要のみの薄い要約になることがある。
+
+**Decision**: プロンプトで出力形式を固定する。`# 全体像` / `# 重要な脆弱性` / `# 傾向` の見出し構造を必須とし、Critical と攻撃兆候ありは全件を個別記載、High 全件の羅列は不要とする。プロンプトはソース別に外部ファイル（`prompts/<source>/summary.md`）で管理する。
+
+**Consequences**:
+- 出力構造が安定し、蓄積データの品質が揃う。
+- プロンプト調整がソース単位で独立して行える。
+
+---
+
 ## TBD（未決定）
 
 - 最初の1ソース以外の巡回対象（behavior-changes 等）
 - 使用するLLM APIモデルの確定（現在は Gemini Flash 系で検証中）
-- データスキーマ（frontmatter項目・粒度：1変更=1ファイル か CVE単位 か）
-- 要約の出力形式（全CVE羅列 か 要点要約 か、両方保持か）
-- P7b（品質検証レビュー）を導入するか
+- データ粒度（月単位 か CVE単位 か）
+- 自律レビューループ（P7b：生成→レビュー→再生成）の実装
+- content_hash の精度（main の hash では main 外テーブル単独変更を直接検知できない）
+- 対象 period の指定方法（現在は config 手動、将来は自動巡回）
+- ソース識別子とディレクトリ配置の統一（source を最上位にするか）
 - ローカルLLM移行時の URL Context 相当の取得手段
 - クラウド移行時のアーキテクチャ
+- cron 等による定期実行の自動化
