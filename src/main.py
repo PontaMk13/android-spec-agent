@@ -13,8 +13,10 @@ def with_retry(func, max_retry=3):
             return func()
         except Exception:
             if attempt < max_retry - 1:
+                print("Retry:", attempt)
                 time.sleep(2 ** attempt)
             else:
+                print("Retry out")
                 raise
 
 def main():
