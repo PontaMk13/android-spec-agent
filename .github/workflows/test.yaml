@@ -1,0 +1,11 @@
+name: test
+
+on:
+  workflow_dispatch:    # 手動で実行できるようにする（テスト用）
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hello
+        run: echo "Hello from GitHub Actions"
