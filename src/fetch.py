@@ -1,6 +1,6 @@
-from pathlib import Path
 import hashlib, requests
 from bs4 import BeautifulSoup
+from paths import STATE
 
 def check_changed(url, source_name, period):
     # main取得 → hash計算
@@ -11,8 +11,7 @@ def check_changed(url, source_name, period):
     current_hash = hashlib.sha256(main_text.encode("utf-8")).hexdigest()
 
     # 前回のmeta.jsonからhashを読む
-    meta_path = (Path(__file__).parent.parent / "state" / source_name
-                 / f"asb-{period}-meta.json")
+    meta_path = (STATE / source_name / f"asb-{period}-meta.json")
     previous_hash = ""
     if meta_path.exists():
         import json

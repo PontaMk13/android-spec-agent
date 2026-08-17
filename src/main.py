@@ -5,6 +5,7 @@ import yaml
 from datetime import datetime
 import time
 from google.genai import errors
+from paths import CONFIG
 
 def with_retry(func, max_retry=3):
     for attempt in range(max_retry):
@@ -17,7 +18,7 @@ def with_retry(func, max_retry=3):
                 raise
 
 def main():
-    config = yaml.safe_load(open("config.yaml", encoding="utf-8"))
+    config = yaml.safe_load(open(CONFIG, encoding="utf-8"))
     base_url = config["source"]["base_url"]
     period = config["source"]["period"]          # 2026-06
     model = config["llm"]["model"]

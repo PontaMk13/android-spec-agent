@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 from google import genai
 from google.genai.types import Tool, GenerateContentConfig
-from pathlib import Path
+from paths import PROMPTS, ENTRIES
 from datetime import datetime
 
 def summarize_by_gemini(url, model, source_name, period):
@@ -14,7 +14,7 @@ def summarize_by_gemini(url, model, source_name, period):
     tools = [{"url_context": {}}]
 
     # プロンプトをファイルから読む
-    prompt_path = Path(__file__).parent.parent / "prompts" / source_name / "summary.md"
+    prompt_path = PROMPTS / source_name / "summary.md"
     prompt_template = prompt_path.read_text(encoding="utf-8")
 
     # {url} を実際のURLに置き換える
@@ -29,7 +29,7 @@ def summarize_by_gemini(url, model, source_name, period):
     summary = response.text
 
     # 保存先（月ディレクトリ）
-    entry_dir = Path(__file__).parent.parent / "entries" / source_name / period
+    entry_dir = ENTRIES / source_name / period
     entry_dir.mkdir(parents=True, exist_ok=True)
 
     # frontmatter + 本文
