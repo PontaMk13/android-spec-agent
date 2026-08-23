@@ -2,10 +2,12 @@ from fetch import check_changed
 from gemini_inv_asb import summarize_by_gemini
 import json
 import yaml
-from datetime import datetime
+from datetime import datetime, date
 import time
+import sys
 from google.genai import errors
 from paths import CONFIG
+
 
 def with_retry(func, max_retry=3):
     for attempt in range(max_retry):
@@ -19,38 +21,38 @@ def with_retry(func, max_retry=3):
                 print("Retry out")
                 raise
 
-def main():
-    import sys
-    from datetime import date
-    if len(sys.argv) > 1:
-        period = sys.argv[1]              # python main.py 2026-06
+
+def recent_periods():
+    """今月と前月を返す（引数なし時の対象）。"""
+    today = date.today()
+    this_month = today.strftime("%Y-%m")
+    if today.month == 1:
+        prev = date(today.year - 1, 12, 1)
     else:
-        period = date.today().strftime("%Y-%m")   # 今月（ex: 2026-08）
+        prev = date(today.year, today.month - 1, 1)
+    return [this_month, prev.strftime("%Y-%m")]
 
-    config = yaml.safe_load(open(CONFIG, encoding="utf-8"))
+
+def process(period, config):
+    """1つの period を処理する。"""
     base_url = config["source"]["base_url"]
-
     model = config["llm"]["model"]
     fallback_model = config["llm"]["fallback_model"]
-    source_name = config["source"]["name"]   # android-security-bulletin
+    source_name = config["source"]["name"]
     max_retry = config["loop"]["max_retry"]
 
-    # URL組み立て（period から年を取り出す）
-    year = period[:4]                             # "2026"
-    url = f"{base_url}/{year}/{period}-01"        # .../2026/2026-06-01
-
+    year = period[:4]
+    url = f"{base_url}/{year}/{period}-01"
     print("URL:", url)
 
-    # hashチェック
     changed, current_hash, meta_path = check_changed(url, source_name, period)
     if not changed:
-        print("変化なし。スキップ")
-        exit()
+        print(f"変化なし。スキップ ({period})")
+        return                                    # exit() → return に変更
 
     print("変化あり。要約します")
 
-    # 要約を試みる
-    model_used = model 
+    model_used = model
     try:
         summary, retry_count = with_retry(lambda: summarize_by_gemini(url, model_used, source_name, period))
         status = "success"
@@ -62,14 +64,12 @@ def main():
             model_used = fallback_model
             status = "success"
             last_error = None
-
         except Exception as e2:
             print(f"フォールバックも失敗: {e2}")
             retry_count = max_retry
             status = "error"
             last_error = str(e2)
 
-    # update_count: 成功時のみ、前回metaから引き継いで +1
     update_count = 0
     if meta_path.exists():
         try:
@@ -79,9 +79,8 @@ def main():
             update_count = 0
     if status == "success":
         update_count += 1
-        print(f"要約成功")
+        print(f"要約成功（{model_used}）") 
 
-    # 処理状態を meta.json に保存
     meta_path.parent.mkdir(parents=True, exist_ok=True)
     meta = {
         "content_hash": current_hash if status == "success" else "",
@@ -94,6 +93,19 @@ def main():
     }
     meta_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"meta保存: {meta_path}")
+
+
+def main():
+    config = yaml.safe_load(open(CONFIG, encoding="utf-8"))
+
+    if len(sys.argv) > 1:
+        periods = [sys.argv[1]]              # 引数指定 → その月だけ
+    else:
+        periods = recent_periods()           # 引数なし → 今月＋前月
+
+    for period in periods:
+        print(f"=== {period} を処理 ===")
+        process(period, config)
 
 
 if __name__ == "__main__":
