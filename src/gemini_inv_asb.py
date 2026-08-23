@@ -34,14 +34,14 @@ def summarize_by_gemini(url, model, source_name, period):
 
     # frontmatter + 本文
     content = f"""---
-    source: android-security-bulletin
-    source_url: {url}
-    period: {period}
-    detected_at: {datetime.now().isoformat()}
-    ---
+source: {source_name}
+source_url: {url}
+period: {period}
+detected_at: {datetime.now().isoformat()}
+---
 
-    {summary}
-    """
+{summary}
+"""
 
     #保存
     filename = f"asb-{period}-summary.md"
