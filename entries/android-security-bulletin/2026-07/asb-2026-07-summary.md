@@ -1,16 +1,16 @@
 ---
-    source: android-security-bulletin
-    source_url: https://source.android.com/docs/security/bulletin/2026/2026-07-01
-    period: 2026-07
-    detected_at: 2026-08-23T08:01:06.087289
-    ---
+source: android-security-bulletin
+source_url: https://source.android.com/docs/security/bulletin/2026/2026-07-01
+period: 2026-07
+detected_at: 2026-08-29T21:05:43.515865
+---
 
-    # 全体像
-2026年7月のAndroidセキュリティ情報に記載された脆弱性の総件数は0件です（Critical: 0件 / High: 0件、コンポーネント別内訳なし）。
+# 全体像
+- 総件数と、深刻度別の件数（Critical: 0件 / High: 0件）
+- コンポーネント別の件数内訳: 該当なし（本セキュリティ情報において、脆弱性は報告されていません）
 
 # 重要な脆弱性
-本月報において対象となるCriticalおよび悪用の兆候がある脆弱性はありません。
+- Critical および攻撃の兆候があるものを個別に列挙: 該当なし（対象となる脆弱性は報告されていません）
 
 # 傾向
-該当する脆弱性の報告がないため、上位のコンポーネント領域はありません。
-    
+- 件数が多いコンポーネント領域を上位順に、件数付きで: 該当なし（脆弱性の報告件数が0件のため）

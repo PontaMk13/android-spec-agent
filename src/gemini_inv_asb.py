@@ -47,3 +47,5 @@ detected_at: {datetime.now().isoformat()}
     filename = f"asb-{period}-summary.md"
     (entry_dir / filename).write_text(content, encoding="utf-8")
     print(f"保存: {entry_dir / filename}")
+
+    return summary

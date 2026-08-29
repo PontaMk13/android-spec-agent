@@ -8,6 +8,10 @@ import sys
 from google.genai import errors
 from paths import CONFIG
 
+from paths import ROOT
+sys.path.append(str(ROOT /"src"/"rag"))   # or 適切な import 設定
+from build_db import embed_and_upsert
+
 
 def with_retry(func, max_retry=3):
     for attempt in range(max_retry):
@@ -93,6 +97,11 @@ def process(period, config):
     }
     meta_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"meta保存: {meta_path}")
+
+    """vector生成"""
+    if status == "success":
+        embed_and_upsert(period, source_name, summary)
+
 
 
 def main():

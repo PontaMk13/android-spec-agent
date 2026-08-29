@@ -130,6 +130,61 @@
 
 ---
 
+## ADR-010: 503 混雑時は lite モデルにフォールバック
+
+**Status**: Accepted
+
+**Context**: 主モデル（gemini-flash-latest）が 503（混雑）で全リトライ失敗することが頻発する。要約失敗のまま終えるより、品質が多少落ちても要約を得たい。
+
+**Decision**: flash-latest で max_retry 回リトライし全滅した場合、gemini-flash-lite-latest で再試行する。実際に使ったモデルを meta の `model_used` に記録する。ADR-002（モデル固定）の例外ではなく、主モデルが使えない時の非常用フォールバックと位置づける。
+
+**Consequences**:
+- 混雑時でも要約を得られる。
+- `model_used` により、lite で生成された（品質が落ちうる）要約を後から特定・再生成できる。
+
+---
+
+## ADR-011: cron は月初 1 週間の毎日実行
+
+**Status**: Accepted
+
+**Context**: Bulletin は月初に初版、数日後に改訂される（ADR-003）。月 1 回では改訂を拾えず、毎日では過剰。
+
+**Decision**: `schedule: "0 0 1-7 * *"`（UTC0時=JST朝9時、毎月1〜7日）で実行する。変化がなければ hash 判定でスキップされるため、実際に要約が走るのは初版公開日と改訂日のみ。手動実行（workflow_dispatch）も併用する。
+
+**Consequences**:
+- 初版と改訂の両方を低コストで拾える。
+- 巡回先（source.android.com）への負荷も月初の低頻度に留まり良識的。
+
+---
+
+## ADR-012: 対象 period は今月＋前月
+
+**Status**: Accepted
+
+**Context**: 前月の改訂が月末〜翌月頭に来る場合、「今月のみ」を対象にすると見逃す。
+
+**Decision**: 実行時引数があればその月のみ、なければ `recent_periods()` で今月と前月の両方を処理する。meta の `update_count`（要約成功時 +1）と `model_used` を追加。
+
+**Consequences**:
+- 月替わり時も前月の遅い改訂を拾える。変化なければスキップされコスト増なし。
+- `update_count` は人間が「前の版に戻す」判断の入口になる（詳細は Git 履歴で辿る）。
+
+---
+
+## ADR-013: frontmatter は行頭から生成する
+
+**Status**: Accepted
+
+**Context**: Python の三重引用符文字列を関数内でインデントして書くと、その空白が frontmatter に混入し YAML が壊れる（`could not find expected ':'`）。
+
+**Decision**: frontmatter を組み立てる `f"""..."""` の中身は、関数のインデントに関わらず行頭（インデント 0）から記述する。値は `source_name` 等の変数を用いる。
+
+**Consequences**:
+- 生成される Markdown の frontmatter が正しい YAML になる。
+
+---
+
 ## TBD（未決定）
 
 - 最初の1ソース以外の巡回対象（behavior-changes 等）
@@ -137,8 +192,7 @@
 - データ粒度（月単位 か CVE単位 か）
 - 自律レビューループ（P7b：生成→レビュー→再生成）の実装
 - content_hash の精度（main の hash では main 外テーブル単独変更を直接検知できない）
-- 対象 period の指定方法（現在は config 手動、将来は自動巡回）
 - ソース識別子とディレクトリ配置の統一（source を最上位にするか）
 - ローカルLLM移行時の URL Context 相当の取得手段
 - クラウド移行時のアーキテクチャ
-- cron 等による定期実行の自動化
+- Ph2: RAG 質問応答の実装（ローカル構成）
