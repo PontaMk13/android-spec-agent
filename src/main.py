@@ -100,7 +100,11 @@ def process(period, config):
 
     """vector生成"""
     if status == "success":
-        embed_and_upsert(period, source_name, summary)
+        try:
+            embed_and_upsert(period, source_name, summary)
+        except Exception as e:
+            print(f"DB更新失敗（要約は保存済み）: {e}")
+            # DB更新の失敗は、要約の成功を巻き込まない
 
 
 
