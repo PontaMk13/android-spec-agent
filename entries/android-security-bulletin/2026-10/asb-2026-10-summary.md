@@ -2,11 +2,35 @@
 source: android-security-bulletin
 source_url: https://source.android.com/docs/security/bulletin/2026/2026-10-01
 period: 2026-10
-detected_at: 2026-10-01T20:17:51.638068
+detected_at: 2026-10-05T21:57:33.489894
 ---
 
-ご指定いただいたURL（`https://source.android.com/docs/security/bulletin/2026/2026-10-01`）にアクセスを試みましたが、該当ページが存在しないか未公開のため、内容を取得することができませんでした [1.1]。
+# 全体像
+- 総件数: 25件
+- 深刻度別の件数: Critical: 7件 / High: 18件
+- コンポーネント別の件数内訳:
+  - Framework: 7件
+  - System: 18件
 
-2026年10月1日付のセキュリティ情報は公開されていないか、URLの年号等に誤りがある可能性がございます（例: 2024年や2025年など他の年月のブレティンである場合など）。
+```mermaid
+pie title 深刻度別の内訳 (2026年10月)
+    "Critical" : 7
+    "High" : 18
+```
 
-有効なURLまたはセキュリティ情報の対象年月を再度ご確認いただけますようお願いいたします。
+# 重要な脆弱性
+- CVE-2026-58865（Framework / Critical）: DoS
+- CVE-2026-55269（System / Critical）: EoP
+- CVE-2026-55280（System / Critical）: EoP
+- CVE-2026-58835（System / Critical）: EoP
+- CVE-2026-58880（System / Critical）: EoP
+- CVE-2026-49933（System / Critical）: DoS
+- CVE-2026-55265（System / Critical）: DoS
+
+# 傾向
+件数が多いコンポーネント領域の上位順は以下の通りです。
+1. System: 18件
+2. Framework: 7件
+
+---
+詳細については、[Android Security Bulletin—October 2026](https://source.android.com/docs/security/bulletin/2026/2026-10-01) をご参照ください。
