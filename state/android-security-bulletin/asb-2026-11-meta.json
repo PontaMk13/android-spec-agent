@@ -1,9 +1,9 @@
 {
-  "content_hash": "7b992e8071e618106eac61b3aaece8227067bc321e1f06200eda75f27696fc34",
-  "detected_at": "2026-11-02T23:13:09.218505",
+  "content_hash": "",
+  "detected_at": "2026-11-07T19:19:50.872664",
   "update_count": 2,
-  "retry_count": 0,
-  "model_used": "gemini-flash-lite-latest",
-  "last_error": null,
-  "status": "success"
+  "retry_count": "2”",
+  "model_used": "gemini-flash-latest",
+  "last_error": "404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-flash-lite-latest is not found for API version v1, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}",
+  "status": "error"
 }
